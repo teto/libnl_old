@@ -170,6 +170,8 @@ extern int nl_connect(struct nl_sock *, int);
 extern void nl_close(struct nl_sock *);
 
 /* <netlink/socket.h> */
+
+extern int nl_socket_add_membership(struct nl_sock *, int );
 extern struct nl_sock *nl_socket_alloc(void);
 extern struct nl_sock *nl_socket_alloc_cb(struct nl_cb *);
 extern void nl_socket_free(struct nl_sock *);
