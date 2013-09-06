@@ -169,6 +169,16 @@ extern void free_dump_params(struct nl_dump_params *);
 extern int nl_connect(struct nl_sock *, int);
 extern void nl_close(struct nl_sock *);
 
+
+struct nlmsghdr {
+        uint32_t nlmsg_len;
+        uint16_t nlmsg_type;
+        uint16_t nlmsg_flags;
+        uint32_t nlmsg_seq;
+        uint32_t nlmsg_pid;
+};
+
+
 /* <netlink/socket.h> */
 
 extern int nl_socket_add_membership(struct nl_sock *, int );
@@ -190,6 +200,13 @@ extern void nl_socket_set_cb(struct nl_sock *, struct nl_cb *);
 
 extern int nl_send_auto_complete(struct nl_sock *, struct nl_msg *);
 extern int nl_recvmsgs(struct nl_sock *, struct nl_cb *);
+
+
+extern void nl_socket_disable_seq_check(struct nl_sock *);
+extern unsigned int nl_socket_use_seq(struct nl_sock *);
+extern void nl_socket_disable_auto_ack(struct nl_sock *);
+extern void nl_socket_enable_auto_ack(struct nl_sock *);
+
 
 /* <netlink/msg.h> */
 extern int			nlmsg_size(int);

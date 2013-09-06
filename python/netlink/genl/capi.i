@@ -42,6 +42,16 @@ extern int genl_connect(struct nl_sock *);
 extern void *genlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 			 int, int, int, uint8_t, uint8_t);
 
+struct genlmsghdr *     genlmsg_hdr (struct nlmsghdr *nlh);
+
+void *  genlmsg_data (const struct genlmsghdr *gnlh);
+
+struct genlmsghdr {
+        uint8_t cmd;
+        uint8_t version;
+        uint16_t reserved;
+};
+
 struct nlattr {
 };
 
