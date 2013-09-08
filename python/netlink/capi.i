@@ -200,6 +200,7 @@ extern void nl_socket_set_cb(struct nl_sock *, struct nl_cb *);
 
 extern int nl_send_auto_complete(struct nl_sock *, struct nl_msg *);
 extern int nl_recvmsgs(struct nl_sock *, struct nl_cb *);
+extern int nl_recvmsgs_default(struct nl_sock *);
 
 
 extern void nl_socket_disable_seq_check(struct nl_sock *);
@@ -559,8 +560,8 @@ struct nlmsgerr {
 %{
 
 struct pynl_callback {
-	PyObject *cbf;
-	PyObject *cba;
+	PyObject *cbf;  /* callback function */
+	PyObject *cba;  /* callback argument */
 };
 
 struct pynl_cbinfo {
@@ -609,6 +610,8 @@ static struct pynl_cbinfo *pynl_get_cbinfo(struct nl_cb *cb, int unlink)
 	return info;
 }
 
+
+
 static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 {
 	struct pynl_callback *cbd = arg;
@@ -616,13 +619,14 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	PyObject *cbparobj;
 	PyObject *resobj;
 	PyObject *funcobj;
-	int result;
+	long int result;
 
 	if (!cbd)
 		return NL_STOP;
 	msgobj = SWIG_NewPointerObj(SWIG_as_voidptr(msg),
 				    SWIGTYPE_p_nl_msg, 0 |  0 );
-	/* add selfobj if callback is a method */
+	/* add selfobj if callback is a method
+	PyMethod_Check returns true if paremter is a method object  */
 	if (cbd->cbf && PyMethod_Check(cbd->cbf)) {
 		PyObject *selfobj = PyMethod_Self(cbd->cbf);
 		cbparobj = Py_BuildValue("(OOO)", selfobj ? selfobj : cbd->cba,
@@ -633,14 +637,37 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	} else {
 		cbparobj = Py_BuildValue("(OO)", msgobj, cbd->cba);
 		funcobj = cbd->cbf;
-		pynl_dbg("callback function %p\n", funcobj);
+		pynl_dbg("callback function %p with parobj %p\n", funcobj, cbparobj);
 	}
 	resobj = PyObject_CallObject(funcobj, cbparobj);
+	/* Decrement the reference count for object o so that it gets deleted */
 	Py_DECREF(cbparobj);
-	if (resobj == NULL)
+
+	if (resobj == NULL) {
+        pynl_dbg("res obj null %s\n","");
 		return NL_STOP;
-	if (!PyArg_ParseTuple(resobj, "i:nl_recv_msg_handler", &result))
+    }
+    /*
+    Parse the parameters of a function that takes only positional parameters into local variables.
+    Returns true on success; on failure, it returns false and raises the appropriate exception.
+    see http://docs.python.org/release/2.6.6/c-api/arg.html?highlight=pyarg_parsetuple#PyArg_ParseTuple
+    for a description of the format
+    */
+
+	/* if (!PyArg_ParseTuple(resobj, "i:nl_recv_msg_handler", &result)) { */
+
+	if(! PyLong_Check(resobj) ) {
+        pynl_dbg("Result is not an integer : it should be ! %s\n","");
+        return NL_STOP;
+	}
+
+    result = PyLong_AsLong(resobj);
+    /*if( result == -1 &&  PyLong_AsLong( ))*/
+	/*if (!PyArg_ParseTuple(resobj, "i:nl_recv_msg_handler", &result)) {
+		pynl_dbg("could not parse tuple %s\n","");
 		result = NL_STOP;
+    }*/
+    pynl_dbg("Callback result %ld\n",result);
 	Py_DECREF(resobj);
 	return result;
 }

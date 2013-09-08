@@ -70,7 +70,7 @@ try:
 	rx_cb = nl.nl_cb_clone(tx_cb)
 	s = nl.nl_socket_alloc_cb(tx_cb)
 	nl.py_nl_cb_err(rx_cb, nl.NL_CB_CUSTOM, error_handler, cbd);
-	nl.py_nl_cb_set(rx_cb, nl.NL_CB_FINISH, nl.NL_CB_CUSTOM, finish_handler, cbd);
+	# nl.py_nl_cb_set(rx_cb, nl.NL_CB_FINISH, nl.NL_CB_CUSTOM, finish_handler, cbd);
 	nl.py_nl_cb_set(rx_cb, nl.NL_CB_ACK, nl.NL_CB_CUSTOM, ack_handler, cbd);
 	nl.py_nl_cb_set(rx_cb, nl.NL_CB_VALID, nl.NL_CB_CUSTOM, msg_handler, cbd);
 
