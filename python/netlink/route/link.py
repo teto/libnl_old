@@ -526,6 +526,7 @@ def get(name, sock=None):
     if not sock:
         sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
+    # returns a struct rtnl_link, defined in netlink-private/types.h
     link = capi.get_from_kernel(sock._sock, 0, name)
     if not link:
         return None

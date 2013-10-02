@@ -19,6 +19,8 @@ from .  import capi as capi
 from .  import link as Link
 from .. import util as util
 
+
+
 class AddressCache(netlink.Cache):
     """Cache containing network addresses"""
 
@@ -32,12 +34,16 @@ class AddressCache(netlink.Cache):
     def __getitem__(self, key):
         # Using ifindex=0 here implies that the local address itself
         # is unique, otherwise the first occurence is returned.
+        print("get item called")
         return self.lookup(0, key)
 
+    # expects an integer as index
     def lookup(self, ifindex, local):
+        print("local type", type(local))
         if type(local) is str:
             local = netlink.AbstractAddress(local)
 
+        # returns a rtnl_addr struct
         addr = capi.rtnl_addr_get(self._nl_cache, ifindex,
                       local._nl_addr)
         if addr is None:
@@ -52,6 +58,9 @@ class AddressCache(netlink.Cache):
     @staticmethod
     def _new_cache(cache):
         return AddressCache(cache=cache)
+
+
+
 
 class Address(netlink.Object):
     """Network address"""
