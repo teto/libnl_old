@@ -15,6 +15,12 @@
 #include <netlink/route/qdisc/htb.h>
 
 #include <netlink/route/addr.h>
+#include <netlink/route/route.h>
+#include <netlink/route/rule.h>
+
+
+
+#include <netlink/fib_lookup/request.h>
 %}
 
 %include <stdint.i>
@@ -473,3 +479,41 @@ extern uint32_t rtnl_addr_get_preferred_lifetime(struct rtnl_addr *);
 extern void	rtnl_addr_set_preferred_lifetime(struct rtnl_addr *, uint32_t);
 extern uint32_t rtnl_addr_get_create_time(struct rtnl_addr *);
 extern uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *);
+
+
+/* <netlink/route/route.h> */
+extern int rtnl_route_read_table_names(const char *);
+
+extern int rtnl_route_str2table(const char *);
+
+extern int rtnl_route_set_dst (struct rtnl_route *route, struct nl_addr *addr);
+extern struct nl_addr * rtnl_route_get_dst (struct rtnl_route *route);
+
+extern int rtnl_route_set_src (struct rtnl_route *route, struct nl_addr *addr);
+extern struct nl_addr * rtnl_route_get_src (struct rtnl_route *route);
+
+extern void rtnl_route_set_table (struct rtnl_route *route, uint32_t table);
+extern uint32_t rtnl_route_get_table (struct rtnl_route *route);
+
+extern void rtnl_route_set_scope (struct rtnl_route *route, uint8_t scope);
+extern uint8_t rtnl_route_get_scope (struct rtnl_route *route);
+
+
+/* <netlink/fib_lookup/request.h> */
+extern struct flnl_request * flnl_request_alloc (void);
+extern void flnl_request_set_table (struct flnl_request *req, int table);
+extern void flnl_request_set_scope (struct flnl_request *req, int scope);
+extern int flnl_request_set_addr (struct flnl_request *req, struct nl_addr *addr);
+
+
+extern void flnl_result_put(struct flnl_result *);
+
+
+/* <netlink/fib_lookup/lookup.h> */
+//struct nl_cache *flnl_result_alloc_cache(void)
+
+extern int flnl_lookup(struct nl_sock *,
+                                            struct flnl_request *,
+                                            struct nl_cache *);
+
+extern int flnl_result_get_table_id(struct flnl_result *res);
