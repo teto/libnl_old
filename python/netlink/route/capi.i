@@ -6,6 +6,7 @@
 #include <netlink/route/link/macvlan.h>
 #include <netlink/route/link/vxlan.h>
 #include <netlink/route/link/inet.h>
+#include <netlink/route/link/bridge.h>
 
 #include <netlink/route/tc.h>
 #include <netlink/route/qdisc.h>
@@ -18,9 +19,8 @@
 #include <netlink/route/route.h>
 #include <netlink/route/rule.h>
 
-
-
 #include <netlink/fib_lookup/request.h>
+#include <netlink/fib_lookup/lookup.h>
 %}
 
 %include <stdint.i>
@@ -483,8 +483,9 @@ extern uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *);
 
 /* <netlink/route/route.h> */
 extern int rtnl_route_read_table_names(const char *);
-
 extern int rtnl_route_str2table(const char *);
+
+extern struct rtnl_route * rtnl_route_alloc (void);
 
 extern int rtnl_route_set_dst (struct rtnl_route *route, struct nl_addr *addr);
 extern struct nl_addr * rtnl_route_get_dst (struct rtnl_route *route);
@@ -516,4 +517,12 @@ extern int flnl_lookup(struct nl_sock *,
                                             struct flnl_request *,
                                             struct nl_cache *);
 
+# this is defined in lookup.c
 extern int flnl_result_get_table_id(struct flnl_result *res);
+
+
+/* <netlink/route/ bridge.h> */
+extern int rtnl_link_bridge_get_flags (struct rtnl_link *link);
+extern int rtnl_link_bridge_set_flags (struct rtnl_link *link, unsigned int flags);
+
+extern int rtnl_link_is_bridge (struct rtnl_link *link);

@@ -17,7 +17,7 @@ The following is a basic example:
     cache = link.LinkCache()	# create new empty link cache
     cache.refill(sock)		# fill cache with all configured links
     eth0 = cache['eth0']		# lookup link "eth0"
-    print eth0			# print basic configuration
+    print(eth0)			# print basic configuration
 
 The module contains the following public classes:
 
