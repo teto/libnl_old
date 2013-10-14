@@ -8,19 +8,20 @@
 from __future__ import absolute_import
 
 
-__version__ = '1.0'
-__all__ = [
+# __version__ = '1.0'
+# __all__ = [
+# ]
 
 
-class RoutingTableCache(netlink.Cache):
-	def __init__(self):
-		pass
+# class RoutingTableCache(netlink.Cache):
+# 	def __init__(self):
+# 		pass
 
 
-class RoutingTable:
+# class RoutingTable:
 
-	""" Can pass its id via a string or via integer """
-	def __init__(self,id):
-		if type(id) == int:
-			print("")
-	# def format()
+# 	""" Can pass its id via a string or via integer """
+# 	def __init__(self,id):
+# 		if type(id) == int:
+# 			print("")
+# 	# def format()

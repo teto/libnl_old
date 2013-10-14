@@ -38,15 +38,17 @@ class RoutingTable(netlink.Object):
 
     """ Can pass its id via a string or via integer """
     def __init__(self, tableId):
+
         if type(tableId) == int:
-            print("")
+            print("Table loaded from integer")
         elif isinstance(tableId,str):
             tableId = capir.rtnl_route_str2table(tableId)
             # TODO check id is ok 
         else:
             raise ValueError("Invalid table id.")
 
-        self._nl_route = capir.rtnl_route_alloc()
+        # super() route/route
+
 
     # def __del__(self):
     #     if not self._nl_object:
@@ -102,8 +104,19 @@ class RoutingTable(netlink.Object):
     #     struct nl_cache *   cache 
     # )   
 
+class NextHop(netlink.Object):
 
+    # def __init__(self, addr, interface, gw=None):
+    def __init__(self, obj=None):
+        # pass 
+        # self._nl_route = capir.rtnl_route_alloc()
 
+        super().__init__( "route/route", "myRoute", obj )
+        # super().__init__( "route/route", "myRoute", self._nl_route )
+        
+        self._nl_route = self._obj2type(self._nl_object)
+        # nh stands for nexthop
+        self._nl_nh = None
 
 # flnl_request
 # TODO should be created elsewhere and not instantiated directly
@@ -115,9 +128,12 @@ class RoutingEntry(netlink.Object):
     # def __init__(self, addr, interface, gw=None):
     def __init__(self, obj=None):
         # pass 
-        self._nl_route = capir.rtnl_route_alloc()
-        super().__init__( self._nl_route )
+        # self._nl_route = capir.rtnl_route_alloc()
+
+        super().__init__( "route/route", "myRoute", obj )
+        # super().__init__( "route/route", "myRoute", self._nl_route )
         
+        self._nl_route = self._obj2type(self._nl_object)
         # nh stands for nexthop
         self._nl_nh = None
 
@@ -126,12 +142,24 @@ class RoutingEntry(netlink.Object):
         if self._nl_nh:
             pass
 
+    @staticmethod
+    def _obj2type(obj):
+        return capir.obj2route(obj)
 
     # def __getitem__():
-
+    def format(self):
+        """Return route as formatted text"""
+        # fmt = util.MyFormatter(self, indent)
+        return ('Route %s'%self._nl_route  )
 
     def set_scope(self):
         pass
+
+
+    #
+    def set_table(self,tableId):
+        """ Expects an integer """
+        capir.rtnl_route_set_table(self._nl_route, int(tableId) )
 
     def get_table(self):
         return capir.rtnl_route_get_table(self._nl_route)
@@ -142,8 +170,9 @@ class RoutingEntry(netlink.Object):
     def get_dst(self):
         return nladdr.Address( capir.rtnl_route_get_dst(self._nl_route) )
 
-    def set_dst(self,address):
+    def set_dst(self, address):
         # nladdr.Address(
+        # print( "ROUTE", )
         return  capir.rtnl_route_set_dst(self._nl_route, address )
 
     def get_gw(self):

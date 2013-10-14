@@ -310,13 +310,21 @@ class Object(object):
 
         if not obj:
             obj = capi.object_alloc_name(self._obj_name)
+            if not obj:
+                raise ValueError( "[" + self._obj_name + "] does not look like a valid name" )
 
+        print("OBJ",obj)
         self._nl_object = obj
 
         # Create a clone which stores the original state to notice
         # modifications
         clone_obj = capi.nl_object_clone(self._nl_object)
+        print("Clone finished")
         self._orig = self._obj2type(clone_obj)
+
+    @staticmethod
+    def _obj2type(obj):
+        raise NotImplementedError("Please implement matching fonction") 
 
     def __del__(self):
         if not self._nl_object:

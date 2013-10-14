@@ -482,6 +482,13 @@ extern uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *);
 
 
 /* <netlink/route/route.h> */
+
+%inline %{
+        struct rtnl_route *obj2route(struct nl_object *obj)
+        {
+                return (struct rtnl_route *) obj;
+        }
+%};
 extern int rtnl_route_read_table_names(const char *);
 extern int rtnl_route_str2table(const char *);
 
@@ -500,7 +507,19 @@ extern void rtnl_route_set_scope (struct rtnl_route *route, uint8_t scope);
 extern uint8_t rtnl_route_get_scope (struct rtnl_route *route);
 
 
+extern void rtnl_route_set_iif (struct rtnl_route *route, int ifindex);
+extern int rtnl_route_get_iif (struct rtnl_route *route);
+
+
 /* <netlink/fib_lookup/request.h> */
+
+%inline %{
+        struct flnl_request *obj2request(struct nl_object *obj)
+        {
+                return (struct flnl_request *) obj;
+        }
+%};
+
 extern struct flnl_request * flnl_request_alloc (void);
 extern void flnl_request_set_table (struct flnl_request *req, int table);
 extern void flnl_request_set_scope (struct flnl_request *req, int scope);
