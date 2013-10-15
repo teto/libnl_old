@@ -489,11 +489,43 @@ extern uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *);
                 return (struct rtnl_route *) obj;
         }
 %};
+
+
+extern int rtnl_route_add (struct nl_sock *sk, struct rtnl_route *route, int flags);
+extern int rtnl_route_delete (struct nl_sock *sk, struct rtnl_route *route, int flags);
+
+
 extern int rtnl_route_read_table_names(const char *);
 extern int rtnl_route_str2table(const char *);
 
-extern struct rtnl_route * rtnl_route_alloc (void);
+/* TODO rewrite 
+extern char* rtnl_route_table2str (int table, char *buf, size_t size);
 
+%cstring_output_maxsize(char *buf, size_t size)
+%cstring_output_allocate(char **s, free(*$1));
+%newobject route_table2str
+*/
+
+%inline %{
+        
+        
+        char* route_table2str (int table)
+        {
+                //PyString* name = PyString_FromStringAndSize("Hello", 40);
+
+                char* buf = malloc( sizeof(char) * 40 );
+                buf = rtnl_route_table2str(table, buf, 40);
+                printf("Found name [%s]",buf);
+                return buf;
+                
+        }
+
+%};
+
+
+/* Not needed anymore 
+extern struct rtnl_route * rtnl_route_alloc (void);
+*/
 extern int rtnl_route_set_dst (struct rtnl_route *route, struct nl_addr *addr);
 extern struct nl_addr * rtnl_route_get_dst (struct rtnl_route *route);
 

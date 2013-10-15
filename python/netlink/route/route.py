@@ -34,7 +34,7 @@ class RoutingTablesCache(netlink.Cache):
 
 
 
-class RoutingTable(netlink.Object):
+class RoutingTable:
 
     """ Can pass its id via a string or via integer """
     def __init__(self, tableId):
@@ -47,13 +47,69 @@ class RoutingTable(netlink.Object):
         else:
             raise ValueError("Invalid table id.")
 
+        self._tableId = tableId
         # super() route/route
 
+    # rtnl_route_table2str 
+    @property
+    def name(self, maxLength=40):
+        """ retrieve table name """
+        # forget about  maxLength
+        return capir.route_table2str( self._tableId );
+
+
+
+    @staticmethod
+    def read_names(filename="/etc/iproute2/rt_tables"):
+
+        """ file with format 
+            "/etc/iproute2/rt_tables"
+            # reserved values
+            255 local
+            254 main
+
+        """
+        err = capir.rtnl_route_read_table_names( filename)
+        return err
+
+    @property
+    def id(self):
+        """ Returns table Id """
+        return self._tableId
+
+
+
+    """ expects a RoutingEntry """
+    def add( self, route, sock=None ):
+
+        if not isinstance(route,RoutingEntry):
+            raise ValueError("Wrong argument. Expecting RoutingEntry")
+
+        if not sock:
+            sock = netlink.lookup_socket( netlink.NETLINK_ROUTE)
+
+
+        capir.rtnl_route_set_table( route._nl_route, self._tableId )
+
+        # Set table 
+        ret = capir.rtnl_route_add(sock._sock, route._nl_route, 0)
+        # if ret == -6:
+        #     raise NlExists(ret)
+        if ret < 0:
+            raise nl.NetlinkError(ret)
 
     # def __del__(self):
     #     if not self._nl_object:
     #         raise ValueError()
     #     capi.nl_object_put(self._nl_object)
+
+
+
+    def __str__(self):
+        return "Routing table <{id}> '{name}'".format(id=self._tableId, name=self.name )
+
+    def __repr__(self):
+        return __str__(self);
 
     # def format()
     def list_entries(self):
@@ -118,6 +174,9 @@ class NextHop(netlink.Object):
         # nh stands for nexthop
         self._nl_nh = None
 
+
+
+
 # flnl_request
 # TODO should be created elsewhere and not instantiated directly
 # rtnl_route_nh_set_gateway
@@ -147,33 +206,73 @@ class RoutingEntry(netlink.Object):
         return capir.obj2route(obj)
 
     # def __getitem__():
-    def format(self):
-        """Return route as formatted text"""
-        # fmt = util.MyFormatter(self, indent)
-        return ('Route %s'%self._nl_route  )
+    # def format(self):
+    #     """Return route as formatted text"""
+    #     # fmt = util.MyFormatter(self, indent)
+    #     return ('Route %s'%self._nl_route  )
+    def format(self, details=False, stats=False, indent=''):
+        
+        """Return link as formatted text"""
+        fmt = util.MyFormatter(self, indent)
 
+        buf = fmt.format('{a|ifindex} {a|name} {a|arptype} {a|address} '\
+                 '{a|_state} <{a|_flags}> {a|_brief}')
+
+        if details:
+            buf += fmt.nl('\t{t|mtu} {t|txqlen} {t|weight} '\
+                      '{t|qdisc} {t|operstate}')
+            buf += fmt.nl('\t{t|broadcast} {t|alias}')
+
+            buf += self._foreach_af('details', fmt)
+
+
+
+            buf += '\n\t%s%s%s%s\n' % (33 * ' ', util.title('RX'),
+                           15 * ' ', util.title('TX'))
+
+        return buf
+
+
+        
     def set_scope(self):
         pass
 
+    def install(self, sock=None):
+        if not sock:
+            sock = netlink.lookup_socket( netlink.NETLINK_ROUTE)
 
-    #
-    def set_table(self,tableId):
-        """ Expects an integer """
-        capir.rtnl_route_set_table(self._nl_route, int(tableId) )
+        # last param = flags . what does it mean ?
+        ret = capir.rtnl_route_add(sock._sock, self._nl_route, 0)
+        print("Tried to install route. Result",ret)
+        # TODO
+        # if ret == -6:
+        #     raise nl.NetlinkError(ret)
+        if ret < 0:
+            raise nl.NetlinkError(ret)
 
-    def get_table(self):
+    @property
+    def table(self):
         return capir.rtnl_route_get_table(self._nl_route)
+    
+    # @table.setter
+    # def table(self, value):
+    #     """ Expects an integer """
+    #     capir.rtnl_route_set_table(self._nl_route, self._tableId )
 
-    def get_src(self):
+    @property
+    def src(self):
         return nladdr.Address( capir.rtnl_route_get_src(self._nl_route) )
 
-    def get_dst(self):
+    @property
+    def dst(self):
         return nladdr.Address( capir.rtnl_route_get_dst(self._nl_route) )
 
-    def set_dst(self, address):
+    @dst.setter
+    def dst(self, address):
         # nladdr.Address(
         # print( "ROUTE", )
         return  capir.rtnl_route_set_dst(self._nl_route, address )
+
 
     def get_gw(self):
         return nladdr.Address( capir.rtnl_route_nh_get_gateway( self._nl_nh) )
@@ -199,15 +298,18 @@ class RoutingEntry(netlink.Object):
         # extern char * rtnl_scope2str(int, char *buf, size_t len);
         return capir.rtnl_route_get_scope ( self._nl_route );
 
-    def get_if (self):
+
+    @property
+    def dev(self):
         return capir.rtnl_route_get_iif ( self._nl_route)
-    
-    """ 
-    Expects interface name, either integer, str, or dev 
 
-    """
-    def set_if (self,interface):
+    @dev.setter    
+    def dev (self,interface):
 
+        """ 
+        Expects interface name, either integer, str, or dev 
+
+        """
         if isinstance(interface, str):
             # convert it 
             # int rtnl_link_name2i (struct nl_cache *cache, const char *name);
