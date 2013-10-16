@@ -63,19 +63,23 @@ class AddressCache(netlink.Cache):
 
 
 class Address(netlink.Object):
+    
     """Network address"""
-
     def __init__(self, obj=None):
+        """ Expects a nl_addr* """
+        # nl_object_get_type returns a char
         netlink.Object.__init__(self, 'route/addr', 'address', obj)
         self._rtnl_addr = self._obj2type(self._nl_object)
 
     @classmethod
     def _from_capi(cls, obj):
-        return cls(capi.addr2obj(obj))
+        # addr2obj converts rtnl_addr* to nl_object*
+        return cls(capi.rtaddr2obj(obj))
 
     @staticmethod
     def _obj2type(obj):
-        return capi.obj2addr(obj)
+        # converts nl_object* to rtnl_addr*
+        return capi.obj2rtaddr(obj)
 
     def __cmp__(self, other):
         # sort by:

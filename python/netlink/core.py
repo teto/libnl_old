@@ -308,8 +308,18 @@ class Object(object):
         self._name = name
         self._modules = []
 
-        if not obj:
+        if obj:
+            print("object != null detected")
+            obj_type = capi.nl_object_get_type(obj);
+            print("Type object ["+ obj_type + "]")
+            # if obj_type == 'route/addr':
+            #     capi.addr2obj
+            # TODO cast it automatically to the correct type ?
+
+        else:
+            print("no object passed to constructor")
             obj = capi.object_alloc_name(self._obj_name)
+
             if not obj:
                 raise ValueError( "[" + self._obj_name + "] does not look like a valid name" )
 
@@ -676,16 +686,20 @@ class AbstractAddress(object):
 
     """
     def __init__(self, addr):
-        self._nl_addr = None
-
-        if isinstance(addr, str):
+        
+        if not addr:
+            pass
+        elif isinstance(addr, str):
             # returns None on success I guess
             # TO CORRECT 
             addr = capi.addr_parse(addr, socket.AF_UNSPEC)
             if addr is None:
                 raise ValueError('Invalid address format')
+        # we expect it to be a valid pointer
         elif addr:
             capi.nl_addr_get(addr)
+        else:
+            raise ValueError("Invalid value as addr. Expecting either nl_addr* or a string")
 
         self._nl_addr = addr
 

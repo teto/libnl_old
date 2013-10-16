@@ -314,6 +314,7 @@ extern void nl_object_unmark(struct nl_object *);
 extern int nl_object_is_marked(struct nl_object *);
 
 extern int nl_object_get_refcnt(struct nl_object *);
+extern const char* nl_object_get_type  (   const struct nl_object *    obj );
 
 /* <netlink/cache.h> */
 
@@ -450,6 +451,7 @@ extern void			nl_cache_mngr_free(struct nl_cache_mngr *);
 
                 return result;
         }
+
 %};
 
 extern struct nl_addr *nl_addr_alloc(size_t);

@@ -406,12 +406,12 @@ extern int	rtnl_htb_get_level(struct rtnl_class *);
 /* <netlink/route/addr.h> */
 
 %inline %{
-        struct nl_object *addr2obj(struct rtnl_addr *addr)
+        struct nl_object *rtaddr2obj(struct rtnl_addr *addr)
         {
                 return OBJ_CAST(addr);
         }
 
-        struct rtnl_addr *obj2addr(struct nl_object *obj)
+        struct rtnl_addr *obj2rtaddr(struct nl_object *obj)
         {
                 return (struct rtnl_addr *) obj;
         }
@@ -572,8 +572,21 @@ extern int flnl_lookup(struct nl_sock *,
 extern int flnl_result_get_table_id(struct flnl_result *res);
 
 
-/* <netlink/route/ bridge.h> */
+/* <netlink/route/bridge.h> */
 extern int rtnl_link_bridge_get_flags (struct rtnl_link *link);
 extern int rtnl_link_bridge_set_flags (struct rtnl_link *link, unsigned int flags);
 
 extern int rtnl_link_is_bridge (struct rtnl_link *link);
+
+
+/* Related to nexthops */
+struct rtnl_nexthop *rtnl_route_nh_alloc (void);
+void rtnl_route_nh_free (struct rtnl_nexthop *nh);
+
+void rtnl_route_add_nexthop (struct rtnl_route *route, struct rtnl_nexthop *nh);
+
+void rtnl_route_nh_set_ifindex (struct rtnl_nexthop *nh, int ifindex);
+int rtnl_route_nh_get_ifindex (struct rtnl_nexthop *nh);
+
+// purpose ?
+//uint8_t rtnl_route_nh_get_weight (struct rtnl_nexthop *nh);
