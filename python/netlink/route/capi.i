@@ -538,6 +538,9 @@ extern uint32_t rtnl_route_get_table (struct rtnl_route *route);
 extern void rtnl_route_set_scope (struct rtnl_route *route, uint8_t scope);
 extern uint8_t rtnl_route_get_scope (struct rtnl_route *route);
 
+int rtnl_route_set_metric (struct rtnl_route *route, int metric, uint32_t value);
+//int rtnl_route_unset_metric (struct rtnl_route *route, int metric);
+int rtnl_route_get_metric (struct rtnl_route *route, int metric, uint32_t *value);
 
 extern void rtnl_route_set_iif (struct rtnl_route *route, int ifindex);
 extern int rtnl_route_get_iif (struct rtnl_route *route);
@@ -557,6 +560,10 @@ extern void flnl_request_set_table (struct flnl_request *req, int table);
 extern void flnl_request_set_scope (struct flnl_request *req, int scope);
 extern int flnl_request_set_addr (struct flnl_request *req, struct nl_addr *addr);
 
+// this is defined in lookup.c
+
+void flnl_request_set_table (struct flnl_request *req, int table); 
+extern int flnl_request_get_table (struct flnl_request *req);
 
 extern void flnl_result_put(struct flnl_result *);
 
@@ -568,11 +575,11 @@ extern int flnl_lookup(struct nl_sock *,
                                             struct flnl_request *,
                                             struct nl_cache *);
 
-# this is defined in lookup.c
-extern int flnl_result_get_table_id(struct flnl_result *res);
+
 
 
 /* <netlink/route/bridge.h> */
+
 extern int rtnl_link_bridge_get_flags (struct rtnl_link *link);
 extern int rtnl_link_bridge_set_flags (struct rtnl_link *link, unsigned int flags);
 

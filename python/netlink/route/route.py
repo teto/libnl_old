@@ -21,14 +21,6 @@ __version__ = '1.0'
 # ]
 
 
-#define NLM_F_REPLACE   0x100   /* Override existing        */
-#define NLM_F_EXCL  0x200   /* Do not touch, if it exists   */
-#define NLM_F_CREATE    0x400   /* Create, if it does not exist */
-#define NLM_F_APPEND    0x800   /* Add to end of list       */
-
-NLM_F_CREATE= int('0x400', 16)
-
-
 def read_table_names(self,filename):
     err = capir.rtnl_route_read_table_names( "/etc/iproute2/rt_tables")
     return err
@@ -47,13 +39,17 @@ class RoutingTablesCache(netlink.Cache):
 class RoutingTable:
 
     """ Can pass its id via a string or via integer """
-    def __init__(self, tableId):
+    def __init__(self, routingTable):
 
-        if type(tableId) == int:
+        tableId = None
+        if isinstance(routingTable, int ):
             print("Table loaded from integer")
-        elif isinstance(tableId,str):
+            tableId=routingTable
+        elif isinstance(tableId, str):
             tableId = capir.rtnl_route_str2table(tableId)
             # TODO check id is ok 
+        elif isinstance(tableId, RoutingTable):
+            tableId = routingTable.id
         else:
             raise ValueError("Invalid table id.")
 
@@ -101,10 +97,9 @@ class RoutingTable:
         print ("Setting table to %d"%self._tableId)
         capir.rtnl_route_set_table( route._nl_route, self._tableId )
 
-        # Set table 
-        ret = capir.rtnl_route_add(sock._sock, route._nl_route, NLM_F_CREATE)
-        # if ret == -6:
-        #     raise NlExists(ret)
+        # Set table
+        ret = capir.rtnl_route_add(sock._sock, route._nl_route, 0)
+
         print("Ret value %d"%ret )
         if ret < 0:
             raise nl.NetlinkError(ret)
@@ -124,37 +119,22 @@ class RoutingTable:
 
     # def format()
     def list_entries(self):
+        # TODO do FIb lookup
         pass
 
-    def addEntry(self, route):
-    # def add(self, dst, gw=None):
-        """ add a new route """
-        # nh = capi.rtnl_route_nh_alloc()
-        # route = capi.rtnl_route_alloc()
 
-        addr_dst = netlink.AbstractAddress(dst)
-        ifidx = self._link.ifindex
 
-        capi.rtnl_route_set_dst(route, addr_dst._nl_addr)
-        capi.rtnl_route_nh_set_ifindex(nh, ifidx)
+    def delEntry(self, route,sock=None):
 
-        if gw is not None:
-            addr_gw = netlink.AbstractAddress(gw)
-            capi.rtnl_route_nh_set_gateway(nh, addr_gw._nl_addr)
+        if not sock:
+            sock = netlink.lookup_socket( netlink.NETLINK_ROUTE)
 
-        capi.rtnl_route_add_nexthop(route, nh)
+        ret = capir.rtnl_route_delete(self._sock._sock, route._nl_route, 0)
 
-        ret = capi.rtnl_route_add(self._sock._sock, route, 0)
-
-        if ret == -6:
-            raise NlExists(ret)
         if ret < 0:
-            raise NlError(ret)
+            raise netlink.NetlinkError(ret)
 
-
-    def delEntry(self, route):
-        pass
-        # rtnl_route_delete(self._sock._sock, route, 0)
+        return ret 
 
     def lookup(self, address):
 
@@ -179,7 +159,7 @@ class RoutingTable:
 class NextHop:
 
 #     # def __init__(self, addr, interface, gw=None):
-    def __init__(self, obj=None):
+    def __init__(self, ifidx=None):
         self._nh = capir.rtnl_route_nh_alloc()
 
     def __del__(self):
@@ -188,22 +168,21 @@ class NextHop:
 
     @property
     def interface(self):
-        pass
+        return capir.rtnl_route_nh_get_ifindex( self._nh )
 
     @interface.setter
     def interface(self, iid):
+        # TODO accept a link iid could be a link
         capir.rtnl_route_nh_set_ifindex( self._nh, iid)
 
-#         # pass 
-#         # self._nl_route = capir.rtnl_route_alloc()
-
-#         super().__init__( "route/nexthop", "myRoute", obj )
-#         # super().__init__( "route/route", "myRoute", self._nl_route )
-        
-#         self._nl_route = self._obj2type(self._nl_object)
-#         # nh stands for nexthop
-#         self._nl_nh = None
-
+    @property
+    def gateway(self):
+        return capir.rtnl_route_nh_get_gateway( self._nh )
+    
+    @gateway.setter
+    def gateway(self,gw):
+        addr_gw = netlink.AbstractAddress(gw)
+        capir.rtnl_route_nh_set_gateway( self._nh, addr_gw._nl_addr)
 
 
 
