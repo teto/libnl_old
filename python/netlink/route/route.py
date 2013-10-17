@@ -5,13 +5,14 @@
 """Module providing access to network routes
 """
 
-from __future__ import absolute_import
+# from __future__ import absolute_import
 
 
 import netlink.route.capi as capir
 import netlink.route.address as nladdr
 import netlink.core as netlink
 import netlink.util as util
+import netlink.fib_lookup.lookup as nlfib
 
 __version__ = '1.0'
 # __all__ = [
@@ -119,7 +120,9 @@ class RoutingTable:
 
     # def format()
     def list_entries(self):
-        # TODO do FIb lookup
+        # TODO do FIb lookup with table number as 
+        # get all routes
+        # nlfib.FIB_Cache
         pass
 
 

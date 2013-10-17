@@ -323,18 +323,18 @@ class Object(object):
             if not obj:
                 raise ValueError( "[" + self._obj_name + "] does not look like a valid name" )
 
-        print("OBJ",obj)
+        # print("OBJ",obj)
         self._nl_object = obj
 
         # Create a clone which stores the original state to notice
         # modifications
         clone_obj = capi.nl_object_clone(self._nl_object)
-        print("Clone finished")
+        # print("Clone finished")
         self._orig = self._obj2type(clone_obj)
 
     @staticmethod
     def _obj2type(obj):
-        raise NotImplementedError("Please implement matching fonction") 
+        raise NotImplementedError() 
 
     def __del__(self):
         if not self._nl_object:
@@ -637,6 +637,7 @@ class CacheManager(object):
 
     def add(self, name):
         capi.cache_mngr_add(self._mngr, name, None, None)
+
 
 class AddressFamily(object):
     """Address family representation

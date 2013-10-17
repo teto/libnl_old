@@ -546,36 +546,6 @@ extern void rtnl_route_set_iif (struct rtnl_route *route, int ifindex);
 extern int rtnl_route_get_iif (struct rtnl_route *route);
 
 
-/* <netlink/fib_lookup/request.h> */
-
-%inline %{
-        struct flnl_request *obj2request(struct nl_object *obj)
-        {
-                return (struct flnl_request *) obj;
-        }
-%};
-
-extern struct flnl_request * flnl_request_alloc (void);
-extern void flnl_request_set_table (struct flnl_request *req, int table);
-extern void flnl_request_set_scope (struct flnl_request *req, int scope);
-extern int flnl_request_set_addr (struct flnl_request *req, struct nl_addr *addr);
-
-// this is defined in lookup.c
-
-void flnl_request_set_table (struct flnl_request *req, int table); 
-extern int flnl_request_get_table (struct flnl_request *req);
-
-extern void flnl_result_put(struct flnl_result *);
-
-
-/* <netlink/fib_lookup/lookup.h> */
-//struct nl_cache *flnl_result_alloc_cache(void)
-
-extern int flnl_lookup(struct nl_sock *,
-                                            struct flnl_request *,
-                                            struct nl_cache *);
-
-
 
 
 /* <netlink/route/bridge.h> */

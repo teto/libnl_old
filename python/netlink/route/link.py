@@ -107,7 +107,7 @@ IP6_OUTBCASTOCTETS = 52
 ICMP6_INMSGS = 53
 ICMP6_INERRORS = 54
 ICMP6_OUTMSGS = 55
-ICMP6_OUTERRORS = 56
+ICMP6_OUTERRORS = 56    
 
 class LinkCache(netlink.Cache):
     """Cache of network links"""
