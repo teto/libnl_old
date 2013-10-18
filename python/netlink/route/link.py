@@ -139,6 +139,8 @@ class LinkCache(netlink.Cache):
     def _new_cache(self, cache):
         return LinkCache(family=self.arg1, cache=cache)
 
+
+
 class Link(netlink.Object):
     """Network link"""
 

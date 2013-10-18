@@ -309,15 +309,15 @@ class Object(object):
         self._modules = []
 
         if obj:
-            print("object != null detected")
+            # print("object != null detected")
             obj_type = capi.nl_object_get_type(obj);
-            print("Type object ["+ obj_type + "]")
+            # print("Type object ["+ obj_type + "]")
             # if obj_type == 'route/addr':
             #     capi.addr2obj
             # TODO cast it automatically to the correct type ?
 
         else:
-            print("no object passed to constructor")
+            # print("no object passed to constructor")
             obj = capi.object_alloc_name(self._obj_name)
 
             if not obj:
@@ -498,11 +498,16 @@ class ReverseObjIterator(ObjIterator):
     def get_next(self):
         return capi.nl_cache_get_prev(self._nl_object)
 
+
+
 class Cache(object):
     """Collection of netlink objects"""
-    def __init__(self):
+    def __init__(self, protocol, cache):
         if self.__class__ is Cache:
             raise NotImplementedError()
+
+        self._protocol = protocol
+        self._nl_cache = cache
         self.arg1 = None
         self.arg2 = None
 

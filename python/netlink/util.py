@@ -104,13 +104,14 @@ class MyFormatter(Formatter):
 
         # HACK, we allow defining strings via fields to allow
         # conversions
-        if key[:2] == 's|':
+        key_prefix = key[:2]
+        if key_prefix == 's|':
             return key[2:]
 
-        if key[:2] == 't|':
+        if key_prefix == 't|':
             # title mode ("TITLE ATTR")
             include_title = True
-        elif key[:2] == 'a|':
+        elif key_prefix == 'a|':
             # plain attribute mode ("ATTR")
             include_title = False
         else:
@@ -139,7 +140,7 @@ class MyFormatter(Formatter):
         elif conversion is None:
             return value
 
-        raise ValueError('Unknown converion specifier {0!s}'.format(conversion))
+        raise ValueError('Unknown conversion specifier {0!s}'.format(conversion))
 
     def nl(self, format_string=''):
         return '\n' + self._indent + self.format(format_string)

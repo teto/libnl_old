@@ -5,14 +5,16 @@
 """Module providing access to network routes
 """
 
-# from __future__ import absolute_import
+from __future__ import absolute_import
 
 
+import netlink.core as netlink
 import netlink.route.capi as capir
 import netlink.route.address as nladdr
-import netlink.core as netlink
+
 import netlink.util as util
-import netlink.fib_lookup.lookup as nlfib
+# import netlink.fib_lookup.lookup as nlfib
+
 
 __version__ = '1.0'
 # __all__ = [
@@ -28,14 +30,25 @@ def read_table_names(self,filename):
 
 
 
-class RoutingTablesCache(netlink.Cache):
+class RoutingCache(netlink.Cache):
     def __init__(self, cache=None):
 
         # TODO use capi.rtnl_route_alloc_cache  
-        super().__init__(cache) 
+        super().__init__( netlink.NETLINK_ROUTE, self._alloc_cache_name("route/route") ) 
+        # addr family : socket.AF_UNSPEC
 
+        # self._nl_cache = 
 
+    # implemented by sub classes, must return new instasnce of cacheable
+    # object
+    @staticmethod
+    def _new_object(obj):
+        return RoutingEntry(obj)
 
+    # implemented by sub classes, must return instance of sub class
+    def _new_cache(self, cache):
+        return Routingcache(cache)
+        
 
 class RoutingTable:
 
@@ -237,9 +250,11 @@ class RoutingEntry(netlink.Object):
         
         """Return link as formatted text"""
         buf = "Src:"+ str(self.src) + ", dst:" + str(self.dst)
-        # fmt = util.MyFormatter(self, indent)
+        
+        fmt = util.MyFormatter(self, indent)
 
-        # buf = fmt.format('{a|ifindex} {a|name} {a|arptype} {a|address} '
+
+        buf = fmt.format('{a|ifindex} {a|dst} ' )
         #          )
         # #'{a|_state} <{a|_flags}> {a|_brief}'
 
@@ -332,12 +347,13 @@ class RoutingEntry(netlink.Object):
 
 
     @property
-    def dev(self):
+    @netlink.nlattr(type=int)
+    def ifindex(self):
         return capir.rtnl_route_get_iif ( self._nl_route)
 
 
-    @dev.setter    
-    def dev(self,interface):
+    @ifindex.setter    
+    def ifindex(self,interface):
 
         """ 
         Expects interface name, either integer, str, or dev 
@@ -348,8 +364,9 @@ class RoutingEntry(netlink.Object):
             # int rtnl_link_name2i (struct nl_cache *cache, const char *name);
             pass
 
-        return capir.rtnl_route_set_iif ( self._nl_route, interface)
+        capir.rtnl_route_set_iif ( self._nl_route, interface)
         
+
 
 
 if __name__ == '__main__': 
