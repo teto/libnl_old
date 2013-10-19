@@ -254,7 +254,7 @@ class RoutingEntry(netlink.Object):
         fmt = util.MyFormatter(self, indent)
 
 
-        buf = fmt.format('{a|ifindex} {a|dst} ' )
+        buf = fmt.format('{a|ifindex} {a|dst} {a|gw}' )
         #          )
         # #'{a|_state} <{a|_flags}> {a|_brief}'
 

@@ -4,6 +4,7 @@ from .. import core as nl
 from .. import capi as core_capi
 from .  import capi as capi_lookup
 from .. import util as util
+from netlink.route import route as nlrtr
 # from netlink.route.route import * as nlrtr
 
 # import netlink.route.route as nlrtr
@@ -130,7 +131,7 @@ class FIB_Cache(nl.Cache):
 
 
 
-from netlink.route import rout as nlrtr
+
 
 if __name__ == '__main__':
     # TODO add some tests

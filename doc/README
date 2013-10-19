@@ -8,3 +8,5 @@ mscgen-filter-1.2
 
 asciidoc > 8.6.x
 doxygen > 1.8.0
+
+make gendoc
