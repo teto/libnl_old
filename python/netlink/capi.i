@@ -757,6 +757,7 @@ void py_nl_cb_put(struct nl_cb *cb)
 	nl_cb_put(cb);
 }
 
+
 int py_nl_cb_set(struct nl_cb *cb, enum nl_cb_type t, enum nl_cb_kind k,
 		PyObject *func, PyObject *a)
 {
@@ -775,6 +776,14 @@ int py_nl_cb_set(struct nl_cb *cb, enum nl_cb_type t, enum nl_cb_kind k,
 	if (k == NL_CB_CUSTOM) {
 		Py_XINCREF(func);
 		Py_XINCREF(a);
+        /* todo check if it is null or a callable ?
+        it is a callable expecting 2 arguments 
+        Copy or factorize in other functions 
+        */
+        if (!PyCallable_Check(func)) {
+            PyErr_SetString(PyExc_TypeError, "Need a callable object!");
+            return -1;
+        }
 		info->cbtype[t].cbf = func;
 		info->cbtype[t].cba = a;
 		return nl_cb_set(cb, t, k,

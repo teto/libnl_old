@@ -175,12 +175,18 @@ class RoutingTable:
 class NextHop:
 
 #     # def __init__(self, addr, interface, gw=None):
-    def __init__(self, ifidx=None):
-        self._nh = capir.rtnl_route_nh_alloc()
+# , ifidx=None
+    def __init__(self, obj):
+        if obj:
+            self._nh = obj
+        # else:
+        #     self._nh = capir.rtnl_route_nh_alloc()
 
     def __del__(self):
-        if self._nh:
-            capir.rtnl_route_nh_free( self._nh )
+        pass
+        # bug if u keep it
+        # if self._nh:
+        #     capir.rtnl_route_nh_free( self._nh )
 
     @property
     def interface(self):
@@ -193,6 +199,7 @@ class NextHop:
 
     @property
     def gateway(self):
+        print ("Getting gateway")
         return capir.rtnl_route_nh_get_gateway( self._nh )
     
     @gateway.setter
@@ -201,12 +208,42 @@ class NextHop:
         capir.rtnl_route_nh_set_gateway( self._nh, addr_gw._nl_addr)
 
 
+    @property
+    @netlink.nlattr(type=str, fmt=util.string)
+    def flags(self):
+        flags=capir.rtnl_route_nh_flags2str(self._nh)
 
-# flnl_request
+        return capir.rtnl_route_nh_flags2str(flags, 256)[0].split(',')
+
+    def _set_flag(self, flag):
+        if flag.startswith('-'):
+            i = capir.rtnl_route_nh_str2flags(flag[1:])
+            capir.rtnl_route_nh_unset_flags(self._nh, i)
+        elif flag.startswith('+'):
+            i = capir.rtnl_route_nh_str2flags(flag[1:])
+            capir.rtnl_route_nh_set_flags(self._nh, i)
+        else:
+            i = capi.rtnl_link_str2flags(flag)
+            capir.rtnl_route_nh_set_flags(self._nh, i)
+
+    @flags.setter
+    def flags(self,value):
+        if not (type(value) is str):
+            for flag in value:
+                self._set_flag(flag)
+        else:
+            self._set_flag(value)
+
+
+    def __str__(self):
+        return "Nexthop"
+
+    def __repr__(self):
+        return __str__(self);
+
+
 # TODO should be created elsewhere and not instantiated directly
-# rtnl_route_nh_set_gateway
 # rename into Route
-# TODO add constructors
 class RoutingEntry(netlink.Object):
 
     # def __init__(self, addr, interface, gw=None):
@@ -253,8 +290,8 @@ class RoutingEntry(netlink.Object):
         
         fmt = util.MyFormatter(self, indent)
 
-
-        buf = fmt.format('{a|ifindex} {a|dst} {a|gw}' )
+        #{a|gw}
+        buf = fmt.format('{a|ifindex} {a|dst} ' )
         #          )
         # #'{a|_state} <{a|_flags}> {a|_brief}'
 
@@ -280,20 +317,6 @@ class RoutingEntry(netlink.Object):
         # extern char * rtnl_scope2str(int, char *buf, size_t len);
         return capir.rtnl_route_get_scope ( self._nl_route );
 
-
-    # TODO remove ?
-    def install(self, sock=None):
-        if not sock:
-            sock = netlink.lookup_socket( netlink.NETLINK_ROUTE)
-
-        # last param = flags . what does it mean ?
-        ret = capir.rtnl_route_add(sock._sock, self._nl_route, 0)
-        print("Tried to install route. Result",ret)
-        # TODO
-        # if ret == -6:
-        #     raise nl.NetlinkError(ret)
-        if ret < 0:
-            raise nl.NetlinkError(ret)
 
     @property
     def table(self):
@@ -324,8 +347,31 @@ class RoutingEntry(netlink.Object):
         return  capir.rtnl_route_set_dst(self._nl_route, address )
 
     @property
+    def tos(self):
+        return capir.rtnl_route_get_tos(self._nl_route )
+
+    @tos.setter
+    @netlink.nlattr(type=int,title="tos")
+    def tos(self, tos):
+        return capir.rtnl_route_set_tos(self._nl_route, tos )
+
+    @property
     def gw(self):
-        return nladdr.Address( capir.rtnl_route_nh_get_gateway( self._nl_nh) )
+        def test(nh_obj,args = None):
+            print("Callback called")
+            print("Callback called", nh_obj)
+            nh = NextHop(nh_obj)
+            # print("gateway ?", nh.gateway)
+            # # print ("args type %s"%type(args))
+            # print("args", args)
+            # ret = nh.gateway
+            
+
+        #"4"
+        ret = None
+        capir.py_rtnl_route_foreach_nexthop( self._nl_route, test, ret )
+        return ret 
+        # return nladdr.Address( capir.rtnl_route_nh_get_gateway( self._nl_nh) )
 
     @gw.setter
     def gw(self, gw, check_route_is_available=False):
@@ -334,20 +380,27 @@ class RoutingEntry(netlink.Object):
         setting that gateway 
         """        
         """ if no nexthop allocated yet, allocate one"""
-        if not self._nl_nh:
-            self._nl_nh = capir.rtnl_route_nh_alloc()
+        # if not self._nl_nh:
+        #     self._nl_nh = capir.rtnl_route_nh_alloc()
 
-        if check_route_is_available:
-            #TODO check 
-            pass
-
-        # set address
-        capir.rtnl_route_nh_set_gateway(self._nl_nh, gw)
-
+        # if check_route_is_available:
+        #     #TODO check 
+        #     pass
+        pass
+        # # set address
+        # capir.rtnl_route_nh_set_gateway(self._nl_nh, gw)
 
 
     @property
-    @netlink.nlattr(type=int)
+    def family(self):
+        return AddressFamily( capir.rtnl_route_get_family(self._nl_route) )
+
+    @family.setter
+    def family(self, value):
+        capir.rtnl_route_set_family(self._nl_route, value)
+
+    @property
+    @netlink.nlattr(type=int,title="ifindex")
     def ifindex(self):
         return capir.rtnl_route_get_iif ( self._nl_route)
 
@@ -375,6 +428,6 @@ if __name__ == '__main__':
     # and finally delete that same route
 
     route = RoutingEntry()
-    route.set_gw()
+
 
     exit(0)
