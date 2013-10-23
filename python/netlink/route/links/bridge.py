@@ -21,6 +21,7 @@ from ..  import capi as capi
 
 class BridgeLink(object):
     def __init__(self, link):
+        
         if not capi.rtnl_link_is_bridge(link):
             raise ValueError("Passed link must be a bridge")
 
@@ -30,7 +31,7 @@ class BridgeLink(object):
     @property
     @netlink.nlattr(type=str)
     def flags(self):
-        """ VLAN flags
+        """ Bridge flags
         Setting this property will *Not* reset flags to value you supply in
         Examples:
         link.flags = '+xxx' # add xxx flag
@@ -71,5 +72,5 @@ class BridgeLink(object):
         return 'bridge-id {0}'.format(self.id)
 
 def init(link):
-    link.vlan = VLANLink(link._link)
-    return link.vlan
+    return BridgeLink(link._rtnl_link)
+    # return link.vlan
