@@ -763,12 +763,6 @@ int py_nl_cb_set(struct nl_cb *cb, enum nl_cb_type t, enum nl_cb_kind k,
 {
 	struct pynl_cbinfo *info;
 
-
-    if (!PyCallable_Check(func)) {
-        PyErr_SetString(PyExc_TypeError, "Need a callable object!");
-        return -1;
-    }
-
 	/* obtain callback info */
 	info = pynl_get_cbinfo(cb, 0);
 
@@ -786,7 +780,10 @@ int py_nl_cb_set(struct nl_cb *cb, enum nl_cb_type t, enum nl_cb_kind k,
         it is a callable expecting 2 arguments 
         Copy or factorize in other functions 
         */
-
+        if (!PyCallable_Check(func)) {
+            PyErr_SetString(PyExc_TypeError, "Need a callable object!");
+            return -1;
+        }
 		info->cbtype[t].cbf = func;
 		info->cbtype[t].cba = a;
 		return nl_cb_set(cb, t, k,
@@ -800,12 +797,6 @@ int py_nl_cb_set_all(struct nl_cb *cb, enum nl_cb_kind k,
 {
 	struct pynl_cbinfo *info;
 	int t;
-
-    if (!PyCallable_Check(func)) {
-        PyErr_SetString(PyExc_TypeError, "Need a callable object!");
-        return -1;
-    }
-
 
 	info = pynl_get_cbinfo(cb, 0);
 	pynl_dbg("cb=%p, info=%p, kind=%d\n", cb, info, k);
@@ -835,11 +826,6 @@ int py_nl_cb_err(struct nl_cb *cb, enum nl_cb_kind k,
 {
 	struct pynl_cbinfo *info;
 
-    if (!PyCallable_Check(func)) {
-        PyErr_SetString(PyExc_TypeError, "Need a callable object!");
-        return -1;
-    }
-    
 	/* obtain callback info */
 	info = pynl_get_cbinfo(cb, 0);
 	pynl_dbg("cb=%p, info=%p, kind=%d\n", cb, info, k);
