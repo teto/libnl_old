@@ -692,22 +692,23 @@ class AbstractAddress(object):
 
     """
     def __init__(self, addr):
-        
-        if not addr:
-            pass
-        elif isinstance(addr, str):
-            # returns None on success I guess
-            # TO CORRECT 
-            addr = capi.addr_parse(addr, socket.AF_UNSPEC)
-            if addr is None:
+
+        if isinstance(addr, str):
+            self._nl_addr = capi.addr_parse(addr, socket.AF_UNSPEC)
+            if self._nl_addr is None:
                 raise ValueError('Invalid address format')
-        # we expect it to be a valid pointer
+
+        elif isinstance(addr, AbstractAddress):
+            capi.nl_addr_get(addr._nl_addr)
+            self._nl_addr = addr._nl_addr 
+        # guess it's a nl_addr truct ?
         elif addr:
             capi.nl_addr_get(addr)
+            self._nl_addr = addr
         else:
-            raise ValueError("Invalid value as addr. Expecting either nl_addr* or a string")
+            raise ValueError("Invalid value [%r] as addr "% addr)
 
-        self._nl_addr = addr
+        
 
     def __del__(self):
         if self._nl_addr:
@@ -722,6 +723,10 @@ class AbstractAddress(object):
             diff = capi.nl_addr_cmp(self._nl_addr, other._nl_addr)
 
         return diff
+
+
+    def getObj(self):
+        return self._nl_addr
 
     def contains(self, item):
         diff = int(self.family) - int(item.family)
